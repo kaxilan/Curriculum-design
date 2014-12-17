@@ -1,9 +1,10 @@
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <string.h>
 #include <cstdlib>
 #include <cstdio>
 #include <unistd.h>
+#include "lin.c"
 #define MAXSIZE 100
 
 using namespace std;
@@ -63,7 +64,9 @@ class Navigation{
                 fstream fout;
                 char a[8],b[8];
                 cout<<"请输入密码\n";
+                system("stty -echo");
                 cin>>b;
+                system("stty echo");
                 fout.open("passwd.txt",ios::in|ios::binary);
                 fout>>a;
                 if(string(a)==string(b))  {
@@ -108,9 +111,13 @@ void ChangePasswd(){
         char a[8] ;
         char b[8] ;
         cout<<"请输入更改密码:"<<endl;
+        system("stty -echo");
         cin>>a;
+        system("stty echo");
         cout<<"请确认密码:"<<endl;
+        system("stty -echo");
         cin>>b;
+        system("stty echo");
         cout<<"修改成功"<<endl;
         if( string(a) == string(b))  {
                 fin.open("passwd.txt",ios::out|ios::binary);
@@ -236,7 +243,7 @@ void ChangePasswd(){
 
         void PrintAll()  {
                 int i = 1;
-                while (g.Gport[i].first != NULL && i <= MAXSIZE)  {
+                while (g.Gport[i].first != NULL && i <= g.NumVertexes) { 
                         cout<<port[i].Name<<":   ";
                         EdgeNode * e = NULL;
                         e = g.Gport[i].first;
@@ -354,27 +361,52 @@ void ChangePasswd(){
                 EdgeNode * e, * f;
                 e = g.Gport[m].first;
                 g.Gport[m].first = NULL;
-                f = e->next;
-                while( f != NULL )  {
+                if(e->next == NULL) {
                         free(e);
-                        e = f;
-                        f = f->next;
+                }
+                else  {
+                        f = e->next;
+                        while( f != NULL )  {
+                                free(e);
+                                e = f;
+                                f = f->next;
+                        }
+                }
+                for( i = m ; i < g.NumVertexes ; i++ ) {
+                        g.Gport[i].first = g.Gport[i+1].first;      
                 }
 
                 for ( i = m ; i <= g.NumVertexes ; i++ )  {
-                        string(port[i].Name) = string(port[i+1].Name);
-                        string(port[i].Dec) = string(port[i+1].Dec);
+                        strcpy(port[i].Name,port[i+1].Name);
+                        strcpy(port[i].Dec,port[i+1].Dec);
                 }
                 g.NumVertexes--;
 
+                for( i = 1; i <= g.NumVertexes ;i++ )  {
+                        e = g.Gport[i].first;
+                        if( e->adjvex == m )  {
+                                g.Gport[i].first = e->next;
+                                free(e);
+                        }
+                        else  {
+                                while ( e->next != NULL )  {
+                                        if( e->next->adjvex == m )  {
+                                                f = e->next;
+                                                e->next = f->next;
+                                                free(f);
+                                        }
+                                        e = e->next;
+                                }
+                        }
+                }
+                
                 for( i = 1 ; i <= g.NumVertexes ; i++ )  {
                         e = g.Gport[i].first;
-                        f = e->next;
-                        while( f != NULL ) {
-                                if( f->adjvex == m) {
-                                        e->next = f->next;
-                                        free(f);
+                        while( e != NULL )  {
+                                if( e->adjvex > m ) {
+                                        e->adjvex--;
                                 }
+                                e = e->next;
                         }
                 }
         }
@@ -429,6 +461,7 @@ int main() {
         a.GetdataFormfile();
         //        a.CreatGraph();
         a.PrintAll();
+        School_Map();
         while( 1 )  {
                 flag = a.StartSigh();
                 i = 0 ; j = 0;
@@ -458,8 +491,8 @@ int main() {
                                         case 2:a.AddVertex(); j = a.AdminSigh();break;  //增加景点
                                         case 3:a.DeleteEdge();j = a.AdminSigh();break;  //删除路线
                                         case 4:a.DeleteVertex(); j = a.AdminSigh();break;  //删除景点
-                                        case 5:a.ChangeWeight(); j = a.AdminSigh();break;  //更改路线
-                                        case 6:a.ChangeInfo();j = a.AdminSigh();break;  //更改景点
+                                        case 5:a.ChangeWeight(); j = a.AdminSigh();break;  //更改长度
+                                        case 6:a.ChangeInfo();j = a.AdminSigh();break;  //更改景点信息
                                         case 7:a.PrintAll();getchar();getchar();j = a.AdminSigh();break;  //查看全部景点
                                         case 8:a.ChangePasswd();getchar();getchar();j = a.AdminSigh();break;
                                         case 9:;break;
