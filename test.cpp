@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <unistd.h>
 #include "lin.c"
-#define MAXSIZE 100
+#define MAXSIZE 25
 #define INIF 32767
 
 using namespace std;
@@ -32,6 +32,7 @@ typedef struct {
 }Graph;
 
 int flag1 = 0;
+int visited[MAXSIZE] = {0};
 
 class Navigation{
         PortName port[MAXSIZE];
@@ -56,7 +57,8 @@ class Navigation{
                 cout<<"2.查找景点\n";
                 cout<<"3.查找路线\n";
                 cout<<"4.景点的全部路线\n";
-                cout<<"5.返回上级\n";
+                cout<<"5.DFS遍历图\n";
+                cout<<"6.返回上级\n";
                 cin>>i;
                 return i;
         }
@@ -249,7 +251,7 @@ void ChangePasswd(){
                         EdgeNode * e = NULL;
                         e = g.Gport[i].first;
                         while( e != NULL )  {
-                                cout<<e->adjvex<<"   ";
+                                cout<<port[e->adjvex].Name<<"   ";
                                 e = e->next;
                         }
                         i++;
@@ -400,7 +402,7 @@ void ChangePasswd(){
                                 }
                         }
                 }
-                
+
                 for( i = 1 ; i <= g.NumVertexes ; i++ )  {
                         e = g.Gport[i].first;
                         while( e != NULL )  {
@@ -454,7 +456,7 @@ void ChangePasswd(){
                         }
                 }
                 e = g.Gport[k].first;
-                
+
                 while( e != NULL )  {
                         dist[e->adjvex] = e->weight;
                         path[e->adjvex][1] = k;
@@ -487,24 +489,54 @@ void ChangePasswd(){
                         }
                         flag++;
                 }
-                for( int i = 1 ; i <= g.NumVertexes ; i++ )  {
-                        cout<<m<<": ";
-                        for( int j = 1 ; path[i][j] != 0 ; j++ )  {
-                                cout<<path[i][j]<<"  ";
-                        }
-                        cout<<endl;
+                for( int i = 1 ; path[n][i] != 0 ; i++ )  {
+                        cout<<port[path[n][i]].Name<<"->";
                 }
-                
+                cout<<port[n].Name<<dist[n]<<"m";
+                cout<<endl;
         }
         void FindRoute()  {
                 int m,n;
+                PrintNO();
                 cout<<"想查找哪两个景点的路径?\n";
                 cin>>m>>n;
+                School_Map();
+                cout<<"\n\n";
                 Dij(m,n);
         }
 
         void AllRoute()  {
+                PrintNO();
+                int m;
+                cout<<"想查找那个景点的全部路线?\n";
+                cin>>m;
+                for( int n = 1 ; n < g.NumVertexes ; n++ )  {
+                        if( m != n )  {
+                                Dij(m,n);
+                        }
+                }
+        }
 
+        void DFS(int i)  {
+                if( i == 0 )  {
+                        PrintNO();
+                        cout<<"从哪点开始?\n";
+                        cin>>i;
+                }
+                cout<<port[i].Name<<"  ";
+                visited[i] = 1;
+                EdgeNode * e = g.Gport[i].first;
+                while( e != NULL )  {
+                        if(!visited[e->adjvex])
+                                DFS(e->adjvex);
+                        e = e->next;
+                }
+        }
+
+        void InitVisited()  {
+                for( int i = 0 ; i <= MAXSIZE ; i++ )  {
+                        visited[i] = 0;
+                }
         }
         };
 
@@ -536,10 +568,12 @@ int main() {
                                         case 1:a.PrintNO();getchar();getchar();i = a.VisitorSigh();break;
                                         case 2:a.SearchPort();getchar();getchar();i = a.VisitorSigh();break;
                                         case 3:a.FindRoute();getchar();getchar();i = a.VisitorSigh();break;
-                                        case 4:getchar();getchar();i = a.VisitorSigh();break;
-                                        case 5:; break;
+                                        case 4:a.AllRoute();getchar();getchar();i = a.VisitorSigh();break;
+                                        case 5:a.DFS(0);a.InitVisited(); getchar();getchar();i = a.VisitorSigh();break;
+                                        case 6:; break;
+                    //                    case 7:; break;
                                 }
-                                if( i == 5 )  {
+                                if( i == 6 )  {
                                         break;
                                 }
                         }
