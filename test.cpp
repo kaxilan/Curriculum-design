@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include "lin.c"
 #define MAXSIZE 100
+#define INIF 32767
 
 using namespace std;
 
@@ -439,8 +440,67 @@ void ChangePasswd(){
                 KeepFile();
         }
 
+        void Dij( int m , int n ){
+                EdgeNode * e;
+                int k = m ,min;
+                int dist[MAXSIZE];  //m到各点的距离
+                int path[MAXSIZE][MAXSIZE]; //m到各点的路径，path[][0]是判断景点有没有添加进S集合
+                int flag = 1;//标记顶点有没有全部进入S集合  1为全部进入S集合
+                //初始化dist(INIF)  path(0)
+                for( int i = 0 ; i < MAXSIZE ; i++ )  {
+                        dist[i] = INIF;
+                        for(int j = 0 ; j < MAXSIZE ; j++ )  {
+                                path[i][j] = 0;
+                        }
+                }
+                e = g.Gport[k].first;
+                
+                while( e != NULL )  {
+                        dist[e->adjvex] = e->weight;
+                        path[e->adjvex][1] = k;
+                        e = e->next;
+                }
+                path[k][0] = 1;
+                while( flag < g.NumVertexes )  {
+                        //找dist中最小的定点以及下标
+                        min = dist[0];
+                        for( int i = 1 ; i <= g.NumVertexes ; i++ )  {
+                                if(min > dist[i] && path[i][0] == 0 )  {
+                                        min = dist[i];
+                                        k = i;
+                                }
+                        }
+                        //给找出的下标位 标记
+                        path[k][0] = 1;
+                        e = g.Gport[k].first;
+                        //将最小的距离的点存入dist
+                        while( e != NULL )  { 
+                                if( ( dist[k] + e->weight)  < dist[e->adjvex] && path[e->adjvex][0] == 0 )  {
+                                        dist[e->adjvex] = dist[k] + e->weight;
+                                        int j;
+                                        for( j = 1 ; path[k][j] != 0 ; j++ )  {
+                                                path[e->adjvex][j] = path[k][j];
+                                        }
+                                        path[e->adjvex][j] = k;
+                                }
+                                e = e->next;
+                        }
+                        flag++;
+                }
+                for( int i = 1 ; i <= g.NumVertexes ; i++ )  {
+                        cout<<m<<": ";
+                        for( int j = 1 ; path[i][j] != 0 ; j++ )  {
+                                cout<<path[i][j]<<"  ";
+                        }
+                        cout<<endl;
+                }
+                
+        }
         void FindRoute()  {
-
+                int m,n;
+                cout<<"想查找哪两个景点的路径?\n";
+                cin>>m>>n;
+                Dij(m,n);
         }
 
         void AllRoute()  {
@@ -475,7 +535,7 @@ int main() {
                                 switch(i)  {
                                         case 1:a.PrintNO();getchar();getchar();i = a.VisitorSigh();break;
                                         case 2:a.SearchPort();getchar();getchar();i = a.VisitorSigh();break;
-                                        case 3:getchar();getchar();i = a.VisitorSigh();break;
+                                        case 3:a.FindRoute();getchar();getchar();i = a.VisitorSigh();break;
                                         case 4:getchar();getchar();i = a.VisitorSigh();break;
                                         case 5:; break;
                                 }
