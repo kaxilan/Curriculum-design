@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <unistd.h>
+#include <queue>
 #include "lin.c"
 #define MAXSIZE 25
 #define INIF 32767
@@ -37,6 +38,7 @@ int visited[MAXSIZE] = {0};
 class Navigation{
         PortName port[MAXSIZE];
         Graph g;
+        queue<int>q;
 
         public:
         int StartSigh(){
@@ -58,7 +60,11 @@ class Navigation{
                 cout<<"3.查找路线\n";
                 cout<<"4.景点的全部路线\n";
                 cout<<"5.DFS遍历图\n";
-                cout<<"6.返回上级\n";
+                cout<<"6.BFS遍历图\n";
+                cout<<"7.指定访问几个景点\n";
+                cout<<"8.两点间的所有路径\n";
+                //    cout<<"9.返回上级\n";
+                cout<<"0.返回上级\n";
                 cin>>i;
                 return i;
         }
@@ -493,7 +499,7 @@ void ChangePasswd(){
                         cout<<port[path[n][i]].Name<<"->";
                 }
                 cout<<port[n].Name<<dist[n]<<"m";
-                cout<<endl;
+        cout<<endl;
         }
         void FindRoute()  {
                 int m,n;
@@ -528,17 +534,71 @@ void ChangePasswd(){
                 EdgeNode * e = g.Gport[i].first;
                 while( e != NULL )  {
                         if(!visited[e->adjvex])
-                                DFS(e->adjvex);
+                        DFS(e->adjvex);
                         e = e->next;
                 }
         }
 
-        void InitVisited()  {
-                for( int i = 0 ; i <= MAXSIZE ; i++ )  {
-                        visited[i] = 0;
-                }
+void BFS()  {
+        int i;
+        PrintNO();
+        cout<<"从哪个点开始?\n";
+        cin>>i;
+        q.push(i);
+        visited[i] = 1;
+        EdgeNode *e;
+        while( !q.empty() )  {
+                e = g.Gport[q.front()].first;
+                cout<<port[q.front()].Name<<"  ";
+                q.pop();
+                while( e != NULL && visited[e->adjvex] == 0)  {
+                        q.push(e->adjvex);
+                        visited[e->adjvex] = 1;
+                        e = e->next;
+                } 
         }
-        };
+}
+void InitVisited()  {
+        for( int i = 0 ; i <= MAXSIZE ; i++ )  {
+                visited[i] = 0;
+        }
+}
+
+void DFS1(int start , int end , int * path ,int d)  {
+        int i , pos ;
+        EdgeNode * e;
+
+        visited[start] = 1;
+        path[++d] = start;
+
+        if( start == end )  {
+                for(i = 1 ; i < d ; i++ )  {
+                        cout<<port[path[i]].Name<<"->";
+                }
+                cout<<port[path[i]].Name<<endl;
+        }
+        e = g.Gport[start].first;
+        while(e)  {
+                pos = e->adjvex;
+                if( !visited[pos] )  {
+                        DFS1(pos,end,path,d);
+                }
+                e = e->next;
+        }
+        visited[start] = 0;
+}
+
+
+        void TwoPortAllRote()  {
+                PrintNO();
+                int path[MAXSIZE];
+                cout<<"哪两个点之间的所有路径?\n";
+                int m , n;
+                cin>>m>>n;
+                DFS1(m,n,path,0);
+        }
+
+};
 
 
 int main() {
@@ -570,10 +630,12 @@ int main() {
                                         case 3:a.FindRoute();getchar();getchar();i = a.VisitorSigh();break;
                                         case 4:a.AllRoute();getchar();getchar();i = a.VisitorSigh();break;
                                         case 5:a.DFS(0);a.InitVisited(); getchar();getchar();i = a.VisitorSigh();break;
-                                        case 6:; break;
-                    //                    case 7:; break;
+                                        case 6:a.BFS();a.InitVisited(); getchar();getchar();i = a.VisitorSigh();break;
+ //                                       case 7:a.SomePort();a.InitVisited(); getchar();getchar();i = a.VisitorSigh();break;
+                                        case 8:a.TwoPortAllRote();a.InitVisited(); getchar();getchar();i = a.VisitorSigh();break;
+                                        case 0:; break;
                                 }
-                                if( i == 6 )  {
+                                if( i == 0 )  {
                                         break;
                                 }
                         }
