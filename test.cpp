@@ -539,7 +539,7 @@ void ChangePasswd(){
                 }
         }
 
-void BFS()  {
+        void BFS()  {
         int i;
         PrintNO();
         cout<<"从哪个点开始?\n";
@@ -558,13 +558,13 @@ void BFS()  {
                 } 
         }
 }
-void InitVisited()  {
+        void InitVisited()  {
         for( int i = 0 ; i <= MAXSIZE ; i++ )  {
                 visited[i] = 0;
         }
 }
 
-void DFS1(int start , int end , int * path ,int d)  {
+        void DFS1(int start , int end , int * path ,int d)  {
         int i , pos ;
         EdgeNode * e;
 
@@ -598,7 +598,77 @@ void DFS1(int start , int end , int * path ,int d)  {
                 DFS1(m,n,path,0);
         }
 
-};
+        void SomePort()  {
+                int num,Print[MAXSIZE] = {0},temp = 0;
+                cout<<"你想查看几个点的最短路径?(不超过5个)\n";
+                cin>>num;
+                PrintNO();
+                cout<<"哪几个点?\n";
+                int tar[6] = {0};
+                for(int i = 1 ; i <= num ; i++ )  {
+                        cin>>tar[i];
+                }
+                EdgeNode * e;
+                int i,count =1,n,m,k,min;
+                int dist[MAXSIZE];  //m到各点的距离
+                int path[MAXSIZE][MAXSIZE]; //m到各点的路径，path[][0]是判断景点有没有添加进S集合
+                int flag = 1;//标记顶点有没有全部进入S集合  1为全部进入S集合
+                Print[1] = tar[1];
+                while( count < num  )  {//记录次数 
+                                        k = m = tar[count];
+                                        n = tar[count+1];
+                                        //初始化dist(INIF)  path(0)
+                                        for(  i = 0 ; i < MAXSIZE ; i++ )  {
+                                                dist[i] = INIF;
+                                                for(int j = 0 ; j < MAXSIZE ; j++ )  {
+                                                        path[i][j] = 0;
+                                                }
+                                        }
+                                        e = g.Gport[k].first;
+
+                                        while( e != NULL )  {
+                                                dist[e->adjvex] = e->weight;
+                                                path[e->adjvex][1] = k;
+                                                e = e->next;
+                                        }
+                                        path[k][0] = 1;
+                                        while( flag < g.NumVertexes )  {
+                                                //找dist中最小的定点以及下标
+                                                min = dist[0];
+                                                for( int i = 1 ; i <= g.NumVertexes ; i++ )  {
+                                                        if(min > dist[i] && path[i][0] == 0 )  {
+                                                                min = dist[i];
+                                                                k = i;
+                                                        }
+                                                }
+                                                //给找出的下标位 标记
+                                                path[k][0] = 1;
+                                                e = g.Gport[k].first;
+                                                //将最小的距离的点存入dist
+                                                while( e != NULL )  { 
+                                                        if( ( dist[k] + e->weight)  < dist[e->adjvex] && path[e->adjvex][0] == 0 )  {
+                                                                dist[e->adjvex] = dist[k] + e->weight;
+                                                                int j;
+                                                                for( j = 1 ; path[k][j] != 0 ; j++ )  {
+                                                                        path[e->adjvex][j] = path[k][j];
+                                                                }
+                                                                path[e->adjvex][j] = k;
+                                                        }
+                                                        e = e->next;
+                                                }
+                                                flag++;               
+                                        }
+                                        for( int i = 1 ; path[n][i] != 0 ; i++ )  {
+                                                cout<<port[path[n][i]].Name<<"->";
+                                        }
+                                        count++;
+                                        flag = 1;
+                                        }
+                                        cout<<port[n].Name;
+                                        cout<<endl;
+
+        }
+        };
 
 
 int main() {
@@ -631,7 +701,7 @@ int main() {
                                         case 4:a.AllRoute();getchar();getchar();i = a.VisitorSigh();break;
                                         case 5:a.DFS(0);a.InitVisited(); getchar();getchar();i = a.VisitorSigh();break;
                                         case 6:a.BFS();a.InitVisited(); getchar();getchar();i = a.VisitorSigh();break;
- //                                       case 7:a.SomePort();a.InitVisited(); getchar();getchar();i = a.VisitorSigh();break;
+                                        case 7:a.SomePort();a.InitVisited(); getchar();getchar();i = a.VisitorSigh();break;
                                         case 8:a.TwoPortAllRote();a.InitVisited(); getchar();getchar();i = a.VisitorSigh();break;
                                         case 0:; break;
                                 }
